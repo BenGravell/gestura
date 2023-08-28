@@ -72,6 +72,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Resume training from the latest model.",
     )
-    parser.add_argument("--num_epochs", type=int, default=100, help="Number of epochs.",)
+    parser.add_argument(
+        "--num_epochs",
+        type=int,
+        default=100,
+        help="Number of epochs.",
+    )
     args = parser.parse_args()
     main(args.num_epochs, args.resume)

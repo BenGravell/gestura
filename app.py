@@ -18,6 +18,13 @@ import config, utils
 
 st.set_page_config(layout="wide")
 
+# Define a container before the tabs for topline options like the Load Most Recent Model button
+topline_container = st.container()
+
+# NOTE: It is critical to define the tabs first before any other operations that conditionally add content to the main body of the app to avoid a jump-to-first-tab-on-first-interaction bug
+tab_names = ["Prediction Summary", "Example Inspector", "Model Information", "Dataset Information"]
+tabs = st.tabs(tab_names)
+
 
 @st.cache_data
 def load_data(dataset_name="UWaveGestureLibrary"):
@@ -53,39 +60,40 @@ def first_time():
 if not st.session_state.get("init"):
     first_time()
 
-
-st.button(
-    "Load Most Recent Model",
-    on_click=load_most_recent_model_callback,
-    type="primary",
-    help=(
-        "Load the model with the most recent timestamp. Use this to inspect predictions as the model is training in"
-        " realtime."
-    ),
-)
-
-
-tab_names = ["Prediction Summary", "Example Inspector", "Model Information", "Dataset Information"]
-tabs = st.tabs(tab_names)
+with topline_container:
+    st.button(
+        "Load Most Recent Model",
+        on_click=load_most_recent_model_callback,
+        type="primary",
+        help=(
+            "Load the model with the most recent timestamp. Use this to inspect predictions as the model is training in"
+            " realtime."
+        ),
+    )
 
 
 with tabs[tab_names.index("Dataset Information")]:
     st.subheader("Source", anchor=False)
     url = "http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary"
-    st.write(
-        f"The dataset used here is the [UWaveGestureLibrary]({url})."
-    )
+    st.write(f"The dataset used here is the [UWaveGestureLibrary]({url}).")
     # NOTE: the iframe embedded url works locally but not when hosted on Streamlit Cloud.
     # st.components.v1.iframe(url, height=600, scrolling=True)
 
     st.subheader("Description", anchor=False)
-    st.write('A set of eight simple gestures generated from accelerometers. The data consists of the X, Y, Z coordinates of each motion. Each series has a length of 315.')
+    st.write(
+        "A set of eight simple gestures generated from accelerometers. The data consists of the X, Y, Z coordinates of"
+        " each motion. Each series has a length of 315."
+    )
 
     st.subheader("Label Definitions", anchor=False)
     st.image("http://www.timeseriesclassification.com/images/datasets/UWaveGestureLibrary.jpg")
 
     st.subheader("Original Source", anchor=False)
-    st.write('The dataset was introduced by J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, in "uWave: Accelerometer-based personalized gesture recognition and its applications," 2009 IEEE International Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9.')
+    st.write(
+        'The dataset was introduced by J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, in "uWave:'
+        ' Accelerometer-based personalized gesture recognition and its applications," 2009 IEEE International'
+        " Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9."
+    )
     st.write("https://ieeexplore.ieee.org/document/4912759")
 
     st.subheader("Download Link", anchor=False)
@@ -101,7 +109,10 @@ def gen_diagram():
 
 
 with tabs[tab_names.index("Model Information")]:
-    st.write("The model used for prediction is a Long Short-Term Memory (LSTM) neural network with multi-head scaled dot-product self-attention.")
+    st.write(
+        "The model used for prediction is a Long Short-Term Memory (LSTM) neural network with multi-head scaled"
+        " dot-product self-attention."
+    )
     st.write("The architecture of the model is shown by the graph below.")
     st.graphviz_chart(gen_diagram(), use_container_width=True)
 
@@ -188,7 +199,10 @@ percentage_cc = st.column_config.NumberColumn(
 )
 
 with tabs[tab_names.index("Prediction Summary")]:
-    st.write("The Prediction Summary tab shows predictive performance on the test set. None of the examples shown here have been exposed to the model during training.")
+    st.write(
+        "The Prediction Summary tab shows predictive performance on the test set. None of the examples shown here have"
+        " been exposed to the model during training."
+    )
     cols = st.columns(3)
 
     with cols[0]:
@@ -260,7 +274,10 @@ with tabs[tab_names.index("Prediction Summary")]:
         st.plotly_chart(fig_cm, use_container_width=True)
 
 with tabs[tab_names.index("Example Inspector")]:
-    st.write("The Example Inspector tab shows predictions and details for individual examples in the test set. None of the examples shown here have been exposed to the model during training.")
+    st.write(
+        "The Example Inspector tab shows predictions and details for individual examples in the test set. None of the"
+        " examples shown here have been exposed to the model during training."
+    )
     idx = st.number_input("Example Index", min_value=0, max_value=len(dataset_test) - 1)
     feature, label = dataset_test[idx]
 
@@ -348,8 +365,6 @@ with tabs[tab_names.index("Example Inspector")]:
         st.subheader("Label Prediction", anchor=False)
         fig = px.bar(x=labels, y=predicted)
 
-
-
         # Add lines and annotations for the prediction and ground truth
         fig.add_shape(
             type="line",
@@ -393,9 +408,8 @@ with tabs[tab_names.index("Example Inspector")]:
             xaxis_title="Class",
             yaxis_title="Value",
             xaxis=dict(
-                tickvals=list(range(0, utils.NUM_CLASSES)),
-                ticktext=[str(i) for i in range(0, utils.NUM_CLASSES)]
-            )
+                tickvals=list(range(0, utils.NUM_CLASSES)), ticktext=[str(i) for i in range(0, utils.NUM_CLASSES)]
+            ),
         )
 
         st.plotly_chart(fig, use_container_width=True)
