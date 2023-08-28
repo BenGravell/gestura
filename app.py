@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 import plotly.figure_factory as ff
 from plotly.subplots import make_subplots
 
-import utils
+import config, utils
 
 
 st.set_page_config(layout="wide")
@@ -70,7 +70,7 @@ tabs = st.tabs(tab_names)
 
 
 with tabs[tab_names.index("Dataset Information")]:
-    st.subheader("Convenient Source", anchor=False)
+    st.subheader("Source", anchor=False)
     url = "http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary"
     st.write(
         f"The dataset used here is the [UWaveGestureLibrary]({url})."
@@ -81,12 +81,12 @@ with tabs[tab_names.index("Dataset Information")]:
     st.subheader("Description", anchor=False)
     st.write('A set of eight simple gestures generated from accelerometers. The data consists of the X, Y, Z coordinates of each motion. Each series has a length of 315.')
 
+    st.subheader("Label Definitions", anchor=False)
+    st.image("http://www.timeseriesclassification.com/images/datasets/UWaveGestureLibrary.jpg")
+
     st.subheader("Original Source", anchor=False)
     st.write('The dataset was introduced by J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, in "uWave: Accelerometer-based personalized gesture recognition and its applications," 2009 IEEE International Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9.')
     st.write("https://ieeexplore.ieee.org/document/4912759")
-
-    st.subheader("Label Definitions", anchor=False)
-    st.image("http://www.timeseriesclassification.com/images/datasets/UWaveGestureLibrary.jpg")
 
     st.subheader("Download Link", anchor=False)
     st.write("http://www.timeseriesclassification.com/aeon-toolkit/UWaveGestureLibrary.zip")
@@ -296,9 +296,9 @@ with tabs[tab_names.index("Example Inspector")]:
             hoverinfo="text+x+y+z",
             marker=dict(
                 size=3,
-                color="#67B3FB",
+                color=config.STREAMLIT_CONFIG["theme"]["primaryColor"],
             ),
-            line=dict(color="white", width=3),
+            line=dict(color="black", width=3),
         )
 
         data = [trace]
@@ -357,7 +357,7 @@ with tabs[tab_names.index("Example Inspector")]:
             x1=label - 0.1,
             y0=-10,
             y1=10,
-            line=dict(color="white", width=2, dash="dash"),
+            line=dict(color="black", width=2, dash="dash"),
             name="Ground Truth",
         )
         fig.add_shape(
@@ -376,7 +376,7 @@ with tabs[tab_names.index("Example Inspector")]:
             y=-6,
             arrowhead=2,
             showarrow=False,
-            font=dict(size=14, color="white"),
+            font=dict(size=14, color="black"),
             textangle=-90,  # Rotate the text by -90 degrees
         )
         fig.add_annotation(
