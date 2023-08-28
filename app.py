@@ -166,7 +166,7 @@ confusion_matrix = get_confusion_matrix(st.session_state.model_path)
 
 
 def class_index_to_gesture_image_url(i):
-    return f"https://raw.githubusercontent.com/BenGravell/vibes/main/gesture_images/gesture_{i}.png"
+    return f"https://raw.githubusercontent.com/BenGravell/gestura/main/gesture_images/gesture_{i}.png"
 
 
 gesture = pd.DataFrame.from_dict(

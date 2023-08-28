@@ -1,5 +1,5 @@
-# vibes
-Timeseries classification
+# Gestura
+Gesture prediction from time series data
 
 
 ## usage
