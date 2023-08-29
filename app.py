@@ -19,7 +19,7 @@ import config
 import utils
 
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
 
 style_metric_cards(
     border_left_color=config.STREAMLIT_CONFIG["theme"]["primaryColor"],
