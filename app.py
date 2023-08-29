@@ -8,20 +8,34 @@ from torchviz import make_dot
 from sklearn.metrics import accuracy_score, precision_score, recall_score, precision_recall_fscore_support
 
 import streamlit as st
+from streamlit_extras.metric_cards import style_metric_cards
+
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 from plotly.subplots import make_subplots
 
-import config, utils
+import config
+import utils
 
 
 st.set_page_config(layout="wide")
 
+style_metric_cards(
+    border_left_color=config.STREAMLIT_CONFIG["theme"]["primaryColor"],
+    border_color=config.STREAMLIT_CONFIG["theme"]["secondaryBackgroundColor"],
+    background_color=config.STREAMLIT_CONFIG["theme"]["backgroundColor"],
+    border_size_px=2,
+    border_radius_px=20,
+    box_shadow=False,
+)
+
 # Define a container before the tabs for topline options like the Load Most Recent Model button
 topline_container = st.container()
 
-# NOTE: It is critical to define the tabs first before any other operations that conditionally add content to the main body of the app to avoid a jump-to-first-tab-on-first-interaction bug
+# NOTE: It is critical to define the tabs first before any other operations that
+# conditionally add content to the main body of the app to avoid a
+# jump-to-first-tab-on-first-interaction bug
 tab_names = ["Prediction Summary", "Example Inspector", "Model Information", "Dataset Information"]
 tabs = st.tabs(tab_names)
 
@@ -229,6 +243,7 @@ with tabs[tab_names.index("Prediction Summary")]:
 
     with cols[1]:
         st.subheader("Prediction Quality Metrics", anchor=False)
+
         metrics = compute_metrics(df["ground_truth"], df["predicted"])
 
         # Prepare data for display
@@ -242,14 +257,25 @@ with tabs[tab_names.index("Prediction Summary")]:
 
         metrics_df = pd.DataFrame(metrics_data).set_index("Class")
 
+        st.caption(
+            "Overall Metrics",
+            help=(
+                "Precision and recall use the 'weighted' average method; see the [scikit-learn docs for"
+                " precision_score()](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html)."
+            ),
+        )
         metric_cols = st.columns(3)
-        with metric_cols[0]:
-            st.metric("Accuracy", f'{pct_fmt(metrics["overall"]["accuracy"])}')
-        with metric_cols[1]:
-            st.metric("Precision", f'{pct_fmt(metrics["overall"]["precision"])}')
-        with metric_cols[2]:
-            st.metric("Recall", f'{pct_fmt(metrics["overall"]["recall"])}')
+        metric_cols[0].metric("Accuracy", f'{pct_fmt(metrics["overall"]["accuracy"])}')
+        metric_cols[1].metric("Precision", f'{pct_fmt(metrics["overall"]["precision"])}')
+        metric_cols[2].metric("Recall", f'{pct_fmt(metrics["overall"]["recall"])}')
 
+        st.caption(
+            "Per-Class Metrics",
+            help=(
+                "See the [scikit-learn docs for"
+                " precision_recall_fscore_support()](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html)."
+            ),
+        )
         st.dataframe(
             metrics_df,
             column_config={
