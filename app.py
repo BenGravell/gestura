@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 import torch
+from torch.nn.functional import softmax
 from torch.utils.data import DataLoader
 from torchviz import make_dot
 from sklearn.metrics import accuracy_score, precision_score, recall_score, precision_recall_fscore_support
@@ -86,40 +87,52 @@ with topline_container:
     )
 
 
-def class_index_to_gesture_image_url(i):
-    return f"https://raw.githubusercontent.com/BenGravell/gestura/main/gesture_images/gesture_{i}.png"
-
+def class_index_to_gesture_image_url(i, local=False):
+    path = f"gesture_images/gesture_{i}.png"
+    if not local:
+        path = f"https://raw.githubusercontent.com/BenGravell/gestura/main/{path}"
+    return path
 
 
 with tabs[tab_names.index("Dataset Information")]:
-    st.subheader("Source", anchor=False)
-    url = "http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary"
-    st.write(f"The dataset used here is the [UWaveGestureLibrary]({url}).")
-    # NOTE: the iframe embedded url works locally but not when hosted on Streamlit Cloud.
-    # st.components.v1.iframe(url, height=600, scrolling=True)
+    st.header("Data Description", anchor=False)
 
-    st.subheader("Description", anchor=False)
+    st.write("The data represent accelerometer recordings of human users making one of of eight simple gestures.")
+
+    st.subheader("Features", anchor=False)
     st.write(
-        "A set of eight simple gestures generated from accelerometers. The features consist of the X, Y, Z coordinates of"
-        " each motion, with each series having a length of 315."
+        "The features consist of the acceleration in the X, Y, Z directions for each motion, with each series having a"
+        " length of 315. The data were captured using an accelerometer anchored to the user's hand."
     )
 
-    st.subheader("Label Definitions", anchor=False)
+    st.subheader("Labels", anchor=False)
+    st.write("The labels consist of the ID associated with the intended gesture made by the user.")
     gesture_cols = st.columns(utils.NUM_CLASSES)
     for i in range(utils.NUM_CLASSES):
         with gesture_cols[i]:
-            st.image(class_index_to_gesture_image_url(i), caption=f"Gesture {i}")
-    st.write('Gesture vocabulary adopted from *C.S. Myers, L.R. Rabiner, "A comparative study of several dynamic time-warping algorithms for connected word recognition," The Bell System Technical Journal 60 (1981) 1389-1409.* The dot denotes the start, and the arrow denotes the end.')
+            st.image(class_index_to_gesture_image_url(i, local=True), caption=f"Gesture {i}")
+    st.write(
+        'Gesture vocabulary adopted from *C.S. Myers, L.R. Rabiner, "A comparative study of several dynamic'
+        ' time-warping algorithms for connected word recognition," The Bell System Technical Journal 60 (1981)'
+        " 1389-1409.* The dot denotes the start, and the arrow denotes the end."
+    )
 
-    st.subheader("Original Source", anchor=False)
+    st.header("Source", anchor=False)
+    url = "http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary"
+    st.write(
+        f"The dataset used here is the [UWaveGestureLibrary]({url}) as provided by"
+        " [timeseriesclassification.com](https://www.timeseriesclassification.com/) and the [aeon"
+        " toolkit](https://www.aeon-toolkit.org/)."
+    )
+
     st.write(
         'The dataset was introduced by *J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, "uWave:'
         ' Accelerometer-based personalized gesture recognition and its applications," 2009 IEEE International'
-        " Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9.*"
+        " Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9.* The paper is available"
+        " from [IEEE Xplore](https://ieeexplore.ieee.org/document/4912759)."
     )
-    st.write("https://ieeexplore.ieee.org/document/4912759")
 
-    st.subheader("Download Link", anchor=False)
+    st.header("Download Link", anchor=False)
     st.write("http://www.timeseriesclassification.com/aeon-toolkit/UWaveGestureLibrary.zip")
 
 
@@ -198,9 +211,6 @@ def get_confusion_matrix(model_path):
 
 confusion_matrix = get_confusion_matrix(st.session_state.model_path)
 
-
-
-
 gesture = pd.DataFrame.from_dict(
     {i: {"gesture": class_index_to_gesture_image_url(i)} for i in range(utils.NUM_CLASSES)}, orient="index"
 )
@@ -221,94 +231,86 @@ percentage_cc = st.column_config.NumberColumn(
 
 with tabs[tab_names.index("Prediction Summary")]:
     st.write(
-        "The Prediction Summary tab shows predictive performance on the test set. None of the examples shown here have"
-        " been exposed to the model during training."
+        "The *Prediction Summary* tab shows predictive performance on the test set. None of the examples shown here"
+        " have been exposed to the model during training."
     )
-    cols = st.columns(3)
 
-    with cols[0]:
-        st.subheader("Prediction Table", anchor=False)
-        prediction_table_df = df.copy()
-        prediction_table_df = prediction_table_df.rename_axis("Example Index")
-        prediction_table_df["predicted"] = prediction_table_df["predicted"].apply(class_index_to_gesture_image_url)
-        prediction_table_df["ground_truth"] = prediction_table_df["ground_truth"].apply(
-            class_index_to_gesture_image_url
-        )
-        prediction_table_df = prediction_table_df.rename(
-            columns={"predicted": "Prediction", "ground_truth": "Ground Truth", "correct": "Correct"}
-        )
-        st.dataframe(
-            prediction_table_df,
-            column_config={
-                "Prediction": st.column_config.ImageColumn("Prediction", width="small", help="The intended gesture."),
-                "Ground Truth": st.column_config.ImageColumn(
-                    "Ground Truth", width="small", help="The intended gesture."
-                ),
-            },
-            use_container_width=True,
-        )
+    st.header("Prediction Table", anchor=False, divider="blue")
+    prediction_table_df = df.copy()
+    prediction_table_df = prediction_table_df.rename_axis("Example Index")
+    prediction_table_df["predicted"] = prediction_table_df["predicted"].apply(class_index_to_gesture_image_url)
+    prediction_table_df["ground_truth"] = prediction_table_df["ground_truth"].apply(class_index_to_gesture_image_url)
+    prediction_table_df = prediction_table_df.rename(
+        columns={"predicted": "Prediction", "ground_truth": "Ground Truth", "correct": "Correct"}
+    )
+    st.dataframe(
+        prediction_table_df,
+        column_config={
+            "Prediction": st.column_config.ImageColumn("Prediction", width="small", help="The intended gesture."),
+            "Ground Truth": st.column_config.ImageColumn("Ground Truth", width="small", help="The intended gesture."),
+        },
+        use_container_width=True,
+    )
 
-    with cols[1]:
-        st.subheader("Prediction Quality Metrics", anchor=False)
+    st.header("Prediction Quality Metrics", anchor=False, divider="blue")
+    metrics = compute_metrics(df["ground_truth"], df["predicted"])
 
-        metrics = compute_metrics(df["ground_truth"], df["predicted"])
+    # Prepare data for display
+    metrics_data = {
+        "Class": np.unique(df["ground_truth"]),
+        "Gesture": gesture["gesture"].values,
+        "Precision": 100 * metrics["per_class"]["precision"],
+        "Recall": 100 * metrics["per_class"]["recall"],
+        "F1-Score": 100 * metrics["per_class"]["f1"],
+    }
 
-        # Prepare data for display
-        metrics_data = {
-            "Class": np.unique(df["ground_truth"]),
-            "Gesture": gesture["gesture"].values,
-            "Precision": 100 * metrics["per_class"]["precision"],
-            "Recall": 100 * metrics["per_class"]["recall"],
-            "F1-Score": 100 * metrics["per_class"]["f1"],
-        }
+    metrics_df = pd.DataFrame(metrics_data).set_index("Class")
 
-        metrics_df = pd.DataFrame(metrics_data).set_index("Class")
+    st.subheader(
+        "Overall Metrics",
+        help=(
+            "Precision and recall use the 'weighted' average method; see the [scikit-learn docs for"
+            " precision_score()](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html)."
+        ),
+        anchor=False,
+    )
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Accuracy", f'{pct_fmt(metrics["overall"]["accuracy"])}')
+    metric_cols[1].metric("Precision", f'{pct_fmt(metrics["overall"]["precision"])}')
+    metric_cols[2].metric("Recall", f'{pct_fmt(metrics["overall"]["recall"])}')
 
-        st.caption(
-            "Overall Metrics",
-            help=(
-                "Precision and recall use the 'weighted' average method; see the [scikit-learn docs for"
-                " precision_score()](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html)."
-            ),
-        )
-        metric_cols = st.columns(3)
-        metric_cols[0].metric("Accuracy", f'{pct_fmt(metrics["overall"]["accuracy"])}')
-        metric_cols[1].metric("Precision", f'{pct_fmt(metrics["overall"]["precision"])}')
-        metric_cols[2].metric("Recall", f'{pct_fmt(metrics["overall"]["recall"])}')
+    st.subheader(
+        "Per-Class Metrics",
+        help=(
+            "See the [scikit-learn docs for"
+            " precision_recall_fscore_support()](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html)."
+        ),
+        anchor=False,
+    )
+    st.dataframe(
+        metrics_df,
+        column_config={
+            "Precision": percentage_cc,
+            "Recall": percentage_cc,
+            "F1-Score": percentage_cc,
+            "Gesture": image_cc,
+        },
+        use_container_width=True,
+    )
 
-        st.caption(
-            "Per-Class Metrics",
-            help=(
-                "See the [scikit-learn docs for"
-                " precision_recall_fscore_support()](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html)."
-            ),
-        )
-        st.dataframe(
-            metrics_df,
-            column_config={
-                "Precision": percentage_cc,
-                "Recall": percentage_cc,
-                "F1-Score": percentage_cc,
-                "Gesture": image_cc,
-            },
-            use_container_width=True,
-        )
+    st.header("Confusion Matrix", anchor=False, divider="blue")
+    x = [f"Predicted Class {i}" for i in range(utils.output_size)]
+    y = [f"Actual Class {i}" for i in range(utils.output_size)]
 
-    with cols[2]:
-        st.subheader("Confusion Matrix", anchor=False)
+    fig_cm = ff.create_annotated_heatmap(
+        z=confusion_matrix[::-1], x=x, y=y[::-1], colorscale="Blues_r", showscale=True, reversescale=True
+    )
 
-        x = [f"Predicted Class {i}" for i in range(utils.output_size)]
-        y = [f"Actual Class {i}" for i in range(utils.output_size)]
-
-        fig_cm = ff.create_annotated_heatmap(
-            z=confusion_matrix[::-1], x=x, y=y[::-1], colorscale="Blues_r", showscale=True, reversescale=True
-        )
-
-        st.plotly_chart(fig_cm, use_container_width=True)
+    st.plotly_chart(fig_cm, use_container_width=True)
 
 with tabs[tab_names.index("Example Inspector")]:
     st.write(
-        "The Example Inspector tab shows predictions and details for individual examples in the test set. None of the"
+        "The *Example Inspector* tab shows predictions and details for individual examples in the test set. None of the"
         " examples shown here have been exposed to the model during training."
     )
     idx = st.number_input("Example Index", min_value=0, max_value=len(dataset_test) - 1)
@@ -326,16 +328,16 @@ with tabs[tab_names.index("Example Inspector")]:
 
     labels = np.arange(utils.NUM_CLASSES).astype(float)
     predicted = output.detach().numpy()[0]
+    predicted_proba = softmax(output, dim=1).detach().numpy()[0]
 
-    cols = st.columns((2, 4, 4, 4))
+    cols = st.columns([2, 3])
     with cols[0]:
-        im_width = 125
-        st.subheader("Ground Truth Gesture", anchor=False)
-        st.image(f"gesture_images/gesture_{label}.png", width=im_width)
-        st.subheader("Predicted Gesture", anchor=False)
-        st.image(f"gesture_images/gesture_{predicted_label}.png", width=im_width)
-    with cols[1]:
-        st.subheader("3D Trajectory", anchor=False)
+        st.header("3D Trajectory", anchor=False, divider="blue")
+        st.info(
+            "This is **not** the literal 3D trajectory of *positions* in an inertial frame, but rather the 3D"
+            " trajectory of *accelerations* as recorded by the accelerometer.",
+            icon="📢",
+        )
         hover_text = [f"Timestep: {i:3d}" for i in range(len(feature_df))]
 
         trace = go.Scatter3d(
@@ -353,18 +355,20 @@ with tabs[tab_names.index("Example Inspector")]:
 
         data = [trace]
 
-        layout = go.Layout(margin=dict(l=0, r=0, b=0, t=0))
+        layout = go.Layout(height=500, margin=dict(l=0, r=0, b=0, t=0))
 
         fig = go.Figure(data=data, layout=layout)
         st.plotly_chart(fig, use_container_width=True)
-    with cols[2]:
-        st.subheader("Time Series & Attention", anchor=False)
+
+    with cols[1]:
+        st.header("Time Series & Attention", anchor=False, divider="blue")
 
         plot_container = st.container()
         options_container = st.container()
 
         with options_container:
-            head_idx = st.number_input("Attention Head Index", min_value=0, max_value=utils.heads - 1)
+            # head_idx = st.number_input("Attention Head Index", min_value=0, max_value=utils.heads - 1)
+            head_idx = st.radio("Attention Head Index", options=[i for i in range(utils.heads)], horizontal=True)
             predicted_attn = attn[0, head_idx].detach().numpy()
         with plot_container:
             line = px.line(feature_df)
@@ -375,7 +379,8 @@ with tabs[tab_names.index("Example Inspector")]:
                 cols=1,
                 shared_xaxes=True,
                 subplot_titles=("Time Series Data", f"Attention Heatmap (Head {head_idx})"),
-                row_heights=[0.4, 0.6],  # Giving more height to the heatmap
+                row_heights=[0.3, 0.7],  # Giving more height to the heatmap
+                vertical_spacing=0.1,
             )
             # Add line plot for time series data
             fig.add_traces(list(line.select_traces()), rows=1, cols=1)
@@ -386,63 +391,60 @@ with tabs[tab_names.index("Example Inspector")]:
                     z=predicted_attn,
                     colorscale="Blues",
                     showscale=True,
-                    colorbar=dict(y=0.2, len=0.5),  # Adjust position and length of the color scale
+                    colorbar=dict(y=0.3, len=0.6),  # Adjust position and length of the color scale
                 ),
                 row=2,
                 col=1,
             )
 
+            # fig.update_yaxes(scaleanchor="x", scaleratio=1, row=2, col=1)
+            fig.update_layout(height=600, margin=dict(l=50, r=50, b=0, t=0))
             st.plotly_chart(fig, use_container_width=True)
 
-    with cols[3]:
-        st.subheader("Label Prediction", anchor=False)
-        fig = px.bar(x=labels, y=predicted)
+    st.header("Predicted Class Probabilties", anchor=False, divider="blue")
+    fig = px.bar(x=labels, y=predicted_proba)
 
-        # Add lines and annotations for the prediction and ground truth
-        fig.add_shape(
-            type="line",
-            x0=label - 0.1,
-            x1=label - 0.1,
-            y0=-10,
-            y1=10,
-            line=dict(color="black", width=2, dash="dash"),
-            name="Ground Truth",
-        )
-        fig.add_shape(
-            type="line",
-            x0=predicted_label + 0.1,
-            x1=predicted_label + 0.1,
-            y0=-10,
-            y1=10,
-            line=dict(color="orange", width=2, dash="dash"),
-            name="Prediction",
-        )
+    fig.add_annotation(
+        text="Ground Truth",
+        x=label,
+        y=-0.2,
+        arrowhead=2,
+        showarrow=False,
+        font=dict(size=14, color="black"),
+        textangle=0,
+        xanchor="center",
+    )
+    fig.add_annotation(
+        text="Prediction",
+        x=predicted_label,
+        y=-0.1,
+        arrowhead=2,
+        showarrow=False,
+        font=dict(size=14, color=config.STREAMLIT_CONFIG["theme"]["primaryColor"]),
+        textangle=0,
+        xanchor="center",
+    )
+    # Customize the layout
+    fig.update_layout(
+        xaxis_title="Class",
+        yaxis_title="Value",
+        xaxis=dict(tickvals=list(range(0, utils.NUM_CLASSES)), ticktext=[str(i) for i in range(0, utils.NUM_CLASSES)]),
+    )
 
-        fig.add_annotation(
-            text="Ground Truth",
-            x=label - 0.1 - 0.2,
-            y=-6,
-            arrowhead=2,
-            showarrow=False,
-            font=dict(size=14, color="black"),
-            textangle=-90,  # Rotate the text by -90 degrees
-        )
-        fig.add_annotation(
-            text="Prediction",
-            x=predicted_label + 0.1 + 0.2,
-            y=-6,
-            arrowhead=2,
-            showarrow=False,
-            font=dict(size=14, color="orange"),
-            textangle=-90,  # Rotate the text by -90 degrees
-        )
-        # Customize the layout
-        fig.update_layout(
-            xaxis_title="Class",
-            yaxis_title="Value",
-            xaxis=dict(
-                tickvals=list(range(0, utils.NUM_CLASSES)), ticktext=[str(i) for i in range(0, utils.NUM_CLASSES)]
-            ),
+    # Adjust the y-axis range to leave space for the images
+    fig.update_yaxes(range=[-0.8, 1.0])
+
+    for i in range(utils.NUM_CLASSES):
+        fig.add_layout_image(
+            x=i,
+            y=-0.5,
+            source=class_index_to_gesture_image_url(i),
+            xref="x",
+            yref="y",
+            sizex=0.4,
+            sizey=0.4,
+            xanchor="center",
+            yanchor="middle",
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
