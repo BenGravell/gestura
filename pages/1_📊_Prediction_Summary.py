@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-
 import plotly.figure_factory as ff
-
 import streamlit as st
 from streamlit_extras.metric_cards import style_metric_cards
 
@@ -25,6 +23,9 @@ style_metric_cards(
 if not st.session_state.get("init"):
     app_utils.first_time()
 
+app_utils.show_load_most_recent_model_button_in_sidebar()
+
+# Prepare data
 gesture_df = app_utils.get_gesture_df()
 df = app_utils.get_predictions(st.session_state.model_path)
 confusion_matrix = app_utils.get_confusion_matrix(st.session_state.model_path)
@@ -41,21 +42,9 @@ metrics_data = {
 metrics_df = pd.DataFrame(metrics_data).set_index("Class")
 
 
-
-st.button(
-    "Load Most Recent Model",
-    on_click=app_utils.load_most_recent_model_callback,
-    type="primary",
-    help=(
-        "Load the model with the most recent timestamp. Use this to inspect predictions as the model is training in"
-        " realtime."
-    ),
-)
-
-
-st.write(
-    "The *Prediction Summary* page shows predictive performance on the test set. None of the examples shown here"
-    " have been exposed to the model during training."
+st.title("Prediction Summary")
+st.caption(
+    "Summary of predictive performance on the test set. None of the examples shown here have been exposed to the model during training."
 )
 
 st.header("Prediction Table", anchor=False, divider="blue")

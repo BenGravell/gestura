@@ -2,9 +2,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torch.nn.functional import softmax
-
 import streamlit as st
-
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -19,17 +17,9 @@ st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
 if not st.session_state.get("init"):
     app_utils.first_time()
 
-dataset, dataloader = app_utils.load_test_dataset_and_noshuffle_dataloader()
+app_utils.show_load_most_recent_model_button_in_sidebar()
 
-st.button(
-    "Load Most Recent Model",
-    on_click=app_utils.load_most_recent_model_callback,
-    type="primary",
-    help=(
-        "Load the model with the most recent timestamp. Use this to inspect predictions as the model is training in"
-        " realtime."
-    ),
-)
+dataset, dataloader = app_utils.load_test_dataset_and_noshuffle_dataloader()
 
 st.write(
     "The *Example Inspector* page shows predictions and details for individual examples in the test set. None of the"

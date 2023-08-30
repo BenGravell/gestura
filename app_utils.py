@@ -36,6 +36,15 @@ def expander_markdown_from_file(title, path):
 def pct_fmt(x):
     return f"{round(100*x)}%"
 
+def show_load_most_recent_model_button_in_sidebar():
+    with st.sidebar:
+        st.button(
+            "Load Most Recent Model",
+            on_click=load_most_recent_model_callback,
+            type="primary",
+            use_container_width=True,
+        )
+        st.caption("Load the model that was saved most recently, as determined by timestamp in filename. Use this to inspect predictions as the model is training in realtime.")
 
 ################################################################################
 # Data & model utils
