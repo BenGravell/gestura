@@ -8,6 +8,7 @@ scipy==1.11.1
 sktime==0.18.1
 streamlit==1.26.0
 streamlit-extras==0.3.0
+st-pages==0.4.4
 torch==2.0.1
 pytorch-lightning==2.0.6
 torchviz==0.0.2
