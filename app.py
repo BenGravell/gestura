@@ -112,9 +112,10 @@ with tabs[tab_names.index("Dataset Information")]:
         with gesture_cols[i]:
             st.image(class_index_to_gesture_image_url(i, local=True), caption=f"Gesture {i}")
     st.write(
-        'Gesture vocabulary adopted from *C.S. Myers, L.R. Rabiner, "A comparative study of several dynamic'
-        ' time-warping algorithms for connected word recognition," The Bell System Technical Journal 60 (1981)'
-        " 1389-1409.* The dot denotes the start, and the arrow denotes the end."
+        'Gesture vocabulary adopted from [C.S. Myers, L.R. Rabiner, *"A comparative study of several dynamic'
+        ' time-warping algorithms for connected word recognition,"* The Bell System Technical Journal 60 (1981)'
+        " 1389-1409](https://ieeexplore.ieee.org/document/6771178). The dot denotes the start, and the arrow denotes"
+        " the end."
     )
 
     st.header("Source", anchor=False)
@@ -126,10 +127,10 @@ with tabs[tab_names.index("Dataset Information")]:
     )
 
     st.write(
-        'The dataset was introduced by *J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, "uWave:'
-        ' Accelerometer-based personalized gesture recognition and its applications," 2009 IEEE International'
-        " Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9.* The paper is available"
-        " from [IEEE Xplore](https://ieeexplore.ieee.org/document/4912759)."
+        'The dataset was introduced by [J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, *"uWave:'
+        ' Accelerometer-based personalized gesture recognition and its applications,"* 2009 IEEE International'
+        " Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp."
+        " 1-9](https://ieeexplore.ieee.org/document/4912759)."
     )
 
     st.header("Download Link", anchor=False)
@@ -144,12 +145,50 @@ def gen_diagram():
     return digraph
 
 
+def expander_markdown_from_file(title, path):
+    with open(path, "r") as file:
+        markdown_content = file.read()
+    with st.expander(title):
+        st.markdown(markdown_content)
+
+
 with tabs[tab_names.index("Model Information")]:
+    st.header("Model Architecture Summary", anchor=False, divider="blue")
     st.write(
         "The model used for prediction is a Long Short-Term Memory (LSTM) neural network with multi-head scaled"
         " dot-product self-attention."
     )
-    st.write("The architecture of the model is shown by the graph below.")
+
+    st.subheader("Long Short-Term Memory (LSTM)", anchor=False)
+    st.write(
+        "LSTMs are a type of recurrent neural network (RNN) architecture. While vanilla RNNs can theoretically capture"
+        " long-range dependencies in sequential data, they often struggle to do so in practice due to the vanishing and"
+        " exploding gradient problems. LSTMs were designed to address these issues."
+    )
+    expander_markdown_from_file("Key features of LSTMs", "help/lstm_key_features.md")
+    expander_markdown_from_file("Handy References for LSTMs", "help/lstm_handy_references.md")
+
+    st.subheader("Self-Attention", anchor=False)
+    st.write(
+        "Self-attention, especially as popularized by the Transformer architecture, is a mechanism that enables a"
+        " neural network to focus on different parts of the input data relative to a particular position in the data,"
+        " often in the context of sequences. "
+    )
+    expander_markdown_from_file("Key features of Self-Attention", "help/self_attention_key_features.md")
+    expander_markdown_from_file("Handy References for Self-Attention", "help/self_attention_handy_references.md")
+
+    st.subheader("Putting Recurrence & Self-Attention Together", anchor=False)
+    st.write(
+        "The combination of self-attention and recurrent neural networks has been shown to be be more effective than"
+        " either self-attention or recurrence individually in time-series classification tasks by [Katrompas,"
+        ' Alexander, Theodoros Ntakouris, and Vangelis Metsis. *"Recurrence and self-attention vs the transformer for'
+        ' time-series classification: a comparative study."* International Conference on Artificial Intelligence in'
+        " Medicine. Cham: Springer International Publishing,"
+        " 2022](https://link.springer.com/chapter/10.1007/978-3-031-09342-5_10)."
+    )
+
+    st.header("Model Architecture Details", anchor=False, divider="blue")
+    st.write("The full architecture of the model is shown by the graph below.")
     st.graphviz_chart(gen_diagram(), use_container_width=True)
 
 
@@ -332,7 +371,7 @@ with tabs[tab_names.index("Example Inspector")]:
 
     cols = st.columns([2, 3])
     with cols[0]:
-        st.header("3D Trajectory", anchor=False, divider="blue")
+        st.header("3D Acceleration Trajectory", anchor=False, divider="blue")
         st.info(
             "This is **not** the literal 3D trajectory of *positions* in an inertial frame, but rather the 3D"
             " trajectory of *accelerations* as recorded by the accelerometer.",
