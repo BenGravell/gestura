@@ -9,17 +9,17 @@ st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
 if not st.session_state.get("init"):
     app_utils.first_time()
 
-st.header("Data Description", anchor=False, divider="blue")
+st.header("Data Description", divider="blue")
 
 st.write("The data represent accelerometer recordings of human users making one of of eight simple gestures.")
 
-st.subheader("Features", anchor=False)
+st.subheader("Features")
 st.write(
     "The features consist of the acceleration in the X, Y, Z directions for each motion, with each series having a"
     " length of 315. The data were captured using an accelerometer anchored to the user's hand."
 )
 
-st.subheader("Labels", anchor=False)
+st.subheader("Labels")
 st.write("The labels consist of the ID associated with the intended gesture made by the user.")
 gesture_cols = st.columns(utils.NUM_CLASSES)
 for i in range(utils.NUM_CLASSES):
@@ -32,7 +32,7 @@ st.write(
     " the end."
 )
 
-st.header("Source", anchor=False, divider="blue")
+st.header("Source", divider="blue")
 url = "http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary"
 st.write(
     f"The dataset used here is the [UWaveGestureLibrary]({url}) as provided by"
@@ -47,5 +47,5 @@ st.write(
     " 1-9](https://ieeexplore.ieee.org/document/4912759)."
 )
 
-st.header("Download Link", anchor=False, divider="blue")
+st.header("Download Link", divider="blue")
 st.write("http://www.timeseriesclassification.com/aeon-toolkit/UWaveGestureLibrary.zip")

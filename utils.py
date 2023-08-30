@@ -122,6 +122,13 @@ class SelfAttention(nn.Module):
         queries = self.queries(queries)
 
         # Scaled dot-product attention
+        # The dot-product is carried out with einstein notation summation.
+        # The legend for letter names is:
+        # n: number of examples, corresponding to N
+        # h: number of heads, corresponding to self.heads
+        # d: size of input to each head, corresponding to self.head_dim
+        # q: length of query, corresponding to query_len
+        # k: length of keys, corresponding to key_len
         attention = torch.einsum("nqhd,nkhd->nhqk", [queries, keys])
         if mask is not None:
             attention = attention.masked_fill(mask == 0, float("-1e20"))
@@ -143,6 +150,7 @@ class LSTMWithAttention(nn.Module):
 
     def forward_with_attn(self, x, mask=None):
         lstm_out, _ = self.lstm(x)
+        print(lstm_out.shape)
         attn_out, attn_weights = self.attention(lstm_out, lstm_out, lstm_out, mask)
 
         # Extract the output at the final timestep

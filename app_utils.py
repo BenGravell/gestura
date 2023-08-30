@@ -10,10 +10,10 @@ import streamlit as st
 import utils
 
 
-
 ################################################################################
 # Rendering utils
 ################################################################################
+
 
 def class_index_to_gesture_image_url(i, local=False):
     path = f"gesture_images/gesture_{i}.png"
@@ -21,10 +21,12 @@ def class_index_to_gesture_image_url(i, local=False):
         path = f"https://raw.githubusercontent.com/BenGravell/gestura/main/{path}"
     return path
 
+
 def get_gesture_df():
     return pd.DataFrame.from_dict(
-    {i: {"gesture": class_index_to_gesture_image_url(i)} for i in range(utils.NUM_CLASSES)}, orient="index"
-)
+        {i: {"gesture": class_index_to_gesture_image_url(i)} for i in range(utils.NUM_CLASSES)}, orient="index"
+    )
+
 
 def expander_markdown_from_file(title, path):
     with open(path, "r") as file:
@@ -36,6 +38,7 @@ def expander_markdown_from_file(title, path):
 def pct_fmt(x):
     return f"{round(100*x)}%"
 
+
 def show_load_most_recent_model_button_in_sidebar():
     with st.sidebar:
         st.button(
@@ -44,11 +47,16 @@ def show_load_most_recent_model_button_in_sidebar():
             type="primary",
             use_container_width=True,
         )
-        st.caption("Load the model that was saved most recently, as determined by timestamp in filename. Use this to inspect predictions as the model is training in realtime.")
+        st.caption(
+            "Load the model that was saved most recently, as determined by timestamp in filename. Use this to inspect"
+            " predictions as the model is training in realtime."
+        )
+
 
 ################################################################################
 # Data & model utils
 ################################################################################
+
 
 @st.cache_data(max_entries=10)
 def load_dataset(dataset_name="UWaveGestureLibrary"):
@@ -128,19 +136,6 @@ def compute_metrics(y_true, y_pred):
         "overall": {"accuracy": accuracy, "precision": precision, "recall": recall},
         "per_class": {"precision": precision_per_class, "recall": recall_per_class, "f1": f1_per_class},
     }
-
-
-@st.cache_data(max_entries=10)
-def get_confusion_matrix(model_path):
-    # Crude check to ensure that the model in st.session_state.model corresponds to model_path
-    # This is to enable caching based on model_path rather than the model itself
-    assert model_path == st.session_state.model_path
-
-    confusion_matrix = np.zeros((utils.output_size, utils.output_size), int)
-    df = get_predictions(model_path)
-    for idx, row in df.iterrows():
-        confusion_matrix[row.ground_truth, row.predicted] += 1
-    return confusion_matrix
 
 
 def first_time():
