@@ -28,7 +28,7 @@ st.caption(
     " to the model during training."
 )
 options = [idx for idx in range(len(dataset))]
-options_formatted = [f"{idx} (label={dataset[idx][1]})" for idx in range(len(dataset))]
+options_formatted = [f"{idx:03d} (label={dataset[idx][1]})" for idx in range(len(dataset))]
 idx = st.selectbox("Example Index", options=options, format_func=lambda x: options_formatted[x])
 feature, label = dataset[idx]
 
