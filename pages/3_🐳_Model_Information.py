@@ -1,7 +1,9 @@
+import inspect
+
 import streamlit as st
 
 import app_utils
-
+import utils
 
 st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
 
@@ -44,5 +46,15 @@ st.write(
 )
 
 st.header("Model Architecture Details", anchor=False, divider="blue")
-st.write("The full architecture of the model is shown by the graph below.")
-st.graphviz_chart(app_utils.gen_diagram(), use_container_width=True)
+
+with st.expander("Model Architecture Diagram"):
+    st.write("The full architecture of the model is shown by the graph below.")
+    st.graphviz_chart(app_utils.gen_diagram(), use_container_width=True)
+
+with st.expander("Model Architecture Code"):
+    st.write("The PyTorch model class code is given below.")
+    SelfAttention_code = inspect.getsource(utils.SelfAttention)
+    LSTMWithAttention_code = inspect.getsource(utils.LSTMWithAttention)
+    # model_architecture_code = 
+    st.code(SelfAttention_code)
+    st.code(LSTMWithAttention_code)
