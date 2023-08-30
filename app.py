@@ -301,7 +301,7 @@ with tabs[tab_names.index("Prediction Summary")]:
         y = [f"Actual Class {i}" for i in range(utils.output_size)]
 
         fig_cm = ff.create_annotated_heatmap(
-            z=confusion_matrix[::-1], x=x, y=y[::-1], colorscale="matter", showscale=True, reversescale=True
+            z=confusion_matrix[::-1], x=x, y=y[::-1], colorscale="Blues_r", showscale=True, reversescale=True
         )
 
         st.plotly_chart(fig_cm, use_container_width=True)
@@ -384,7 +384,7 @@ with tabs[tab_names.index("Example Inspector")]:
             fig.add_trace(
                 go.Heatmap(
                     z=predicted_attn,
-                    colorscale="matter_r",
+                    colorscale="Blues",
                     showscale=True,
                     colorbar=dict(y=0.2, len=0.5),  # Adjust position and length of the color scale
                 ),
