@@ -101,7 +101,7 @@ with tabs[tab_names.index("Dataset Information")]:
     st.subheader("Description", anchor=False)
     st.write(
         "A set of eight simple gestures generated from accelerometers. The features consist of the X, Y, Z coordinates of"
-        " each motion. Each series has a length of 315."
+        " each motion, with each series having a length of 315."
     )
 
     st.subheader("Label Definitions", anchor=False)
