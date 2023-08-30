@@ -86,6 +86,11 @@ with topline_container:
     )
 
 
+def class_index_to_gesture_image_url(i):
+    return f"https://raw.githubusercontent.com/BenGravell/gestura/main/gesture_images/gesture_{i}.png"
+
+
+
 with tabs[tab_names.index("Dataset Information")]:
     st.subheader("Source", anchor=False)
     url = "http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary"
@@ -95,18 +100,22 @@ with tabs[tab_names.index("Dataset Information")]:
 
     st.subheader("Description", anchor=False)
     st.write(
-        "A set of eight simple gestures generated from accelerometers. The data consists of the X, Y, Z coordinates of"
+        "A set of eight simple gestures generated from accelerometers. The features consist of the X, Y, Z coordinates of"
         " each motion. Each series has a length of 315."
     )
 
     st.subheader("Label Definitions", anchor=False)
-    st.image("http://www.timeseriesclassification.com/images/datasets/UWaveGestureLibrary.jpg")
+    gesture_cols = st.columns(utils.NUM_CLASSES)
+    for i in range(utils.NUM_CLASSES):
+        with gesture_cols[i]:
+            st.image(class_index_to_gesture_image_url(i), caption=f"Gesture {i}")
+    st.write('Gesture vocabulary adopted from *C.S. Myers, L.R. Rabiner, "A comparative study of several dynamic time-warping algorithms for connected word recognition," The Bell System Technical Journal 60 (1981) 1389-1409.* The dot denotes the start, and the arrow denotes the end.')
 
     st.subheader("Original Source", anchor=False)
     st.write(
-        'The dataset was introduced by J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, in "uWave:'
+        'The dataset was introduced by *J. Liu, Z. Wang, L. Zhong, J. Wickramasuriya and V. Vasudevan, "uWave:'
         ' Accelerometer-based personalized gesture recognition and its applications," 2009 IEEE International'
-        " Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9."
+        " Conference on Pervasive Computing and Communications, Galveston, TX, 2009, pp. 1-9.*"
     )
     st.write("https://ieeexplore.ieee.org/document/4912759")
 
@@ -190,8 +199,6 @@ def get_confusion_matrix(model_path):
 confusion_matrix = get_confusion_matrix(st.session_state.model_path)
 
 
-def class_index_to_gesture_image_url(i):
-    return f"https://raw.githubusercontent.com/BenGravell/gestura/main/gesture_images/gesture_{i}.png"
 
 
 gesture = pd.DataFrame.from_dict(
