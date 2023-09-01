@@ -150,7 +150,6 @@ class LSTMWithAttention(nn.Module):
 
     def forward_with_attn(self, x, mask=None):
         lstm_out, _ = self.lstm(x)
-        print(lstm_out.shape)
         attn_out, attn_weights = self.attention(lstm_out, lstm_out, lstm_out, mask)
 
         # Extract the output at the final timestep
