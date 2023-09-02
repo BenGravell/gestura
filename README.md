@@ -10,3 +10,10 @@ Gesture prediction from time-series data.
 (optional)
 - Run `train_test_split.py` to regenerate the train/test split indices.
 - Run `cleanup.py` to remove old model and optimizer checkpoints.
+
+
+## Example Screenshots
+
+<div align="center">
+<img src="assets/gestura_example.png" alt="gestura_example"></img>
+</div>
