@@ -6,7 +6,7 @@ import numpy as np
 import utils
 
 
-def write_train_test_idxs(dataset_name="UWaveGestureLibrary", test_size=0.3, random_state=1):
+def write_train_test_idxs(dataset_name=None, test_size=0.3, random_state=1):
     _, y, _ = utils.load_data(dataset_name)
 
     n = len(y)

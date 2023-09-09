@@ -4,7 +4,7 @@ Gesture prediction from time-series data.
 
 ## Usage
 1. Run `train.py` to train the model.
-2. Run `streamlit run app.py` to visualize the predictions.
+2. Run `streamlit run Gestura.py` to visualize the predictions.
 
 
 (optional)

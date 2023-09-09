@@ -26,6 +26,12 @@ ROOT_TMP_DIR = tempfile.gettempdir()
 make_dir_if_it_does_not_exist(tempfile.gettempdir())
 
 
+DATASET_NAME = "UWaveGestureLibrary"
+
+MODEL_DIR_PATH = pathlib.Path("model")
+OPTIM_DIR_PATH = pathlib.Path("optimizer")
+
+
 NUM_CLASSES = 8
 
 # Assume input sequence x of shape (batch_size, sequence_length, input_size)
@@ -52,9 +58,9 @@ class SklearnDataset(Dataset):
         return self.X[idx], self.y[idx]
 
 
-# UWaveGestureLibrary
-# http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary
-def load_data(dataset_name="UWaveGestureLibrary"):
+def load_data(dataset_name=None):
+    if dataset_name is None:
+        dataset_name = DATASET_NAME
     extract_path = os.path.join(ROOT_TMP_DIR, "aeon", "datasets")
     # It is critical for extract_path to end with "/", otherwise it will fail.
     # A PR was opened to correct this: https://github.com/aeon-toolkit/aeon/pull/679
@@ -65,8 +71,8 @@ def load_data(dataset_name="UWaveGestureLibrary"):
     return X, y, meta_data
 
 
-def load_dataset(dataset_name="UWaveGestureLibrary"):
-    X, y, meta_data = load_data(dataset_name)
+def load_dataset(dataset_name=None):
+    X, y, _ = load_data(dataset_name)
 
     # swap axes so data is organized with dims (num_examples, sequence_length, input_size)
     X = np.swapaxes(X, 1, 2)
@@ -165,10 +171,6 @@ class LSTMWithAttention(nn.Module):
 
 def get_timestamp_millis():
     return int(datetime.timestamp(datetime.now()) * 1000)
-
-
-MODEL_DIR_PATH = pathlib.Path("model")
-OPTIM_DIR_PATH = pathlib.Path("optimizer")
 
 
 def get_most_recent_model_path():

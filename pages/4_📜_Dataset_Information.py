@@ -33,9 +33,9 @@ st.write(
 )
 
 st.header("Source", divider="blue")
-url = "http://www.timeseriesclassification.com/description.php?Dataset=UWaveGestureLibrary"
+url = f"http://www.timeseriesclassification.com/description.php?Dataset={utils.DATASET_NAME}"
 st.write(
-    f"The dataset used here is the [UWaveGestureLibrary]({url}) as provided by"
+    f"The dataset used here is the [{utils.DATASET_NAME}]({url}) as provided by"
     " [timeseriesclassification.com](https://www.timeseriesclassification.com/) and the [aeon"
     " toolkit](https://www.aeon-toolkit.org/)."
 )
@@ -48,4 +48,4 @@ st.write(
 )
 
 st.header("Download Link", divider="blue")
-st.write("http://www.timeseriesclassification.com/aeon-toolkit/UWaveGestureLibrary.zip")
+st.write(f"http://www.timeseriesclassification.com/aeon-toolkit/{utils.DATASET_NAME}.zip")

@@ -59,12 +59,12 @@ def show_load_most_recent_model_button_in_sidebar():
 
 
 @st.cache_data(max_entries=10)
-def load_dataset(dataset_name="UWaveGestureLibrary"):
+def load_dataset(dataset_name=None):
     return utils.load_dataset(dataset_name)
 
 
 @st.cache_data(max_entries=10)
-def load_test_dataset_and_noshuffle_dataloader(dataset_name="UWaveGestureLibrary"):
+def load_test_dataset_and_noshuffle_dataloader(dataset_name=None):
     _, _, dataset, _ = load_dataset(dataset_name)
     dataloader = DataLoader(dataset, batch_size=64, shuffle=False)
     return dataset, dataloader
