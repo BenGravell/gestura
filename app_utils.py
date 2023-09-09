@@ -150,14 +150,14 @@ def get_predictions(dataset_name, model_path):
     all_predictions = []
 
     with torch.no_grad():
-        for feature, label in st.session_state.dataloader:
-            outputs = st.session_state.model(feature)
+        for features, labels in st.session_state.dataloader:
+            outputs = st.session_state.model(features)
 
             # Use argmax to get class predictions if your outputs are probabilities
             predicted_classes = torch.argmax(outputs, dim=1)
 
             all_predictions.extend(predicted_classes.detach().numpy())
-            all_ground_truth.extend(label.detach().numpy())
+            all_ground_truth.extend(labels.detach().numpy())
 
     df = pd.DataFrame({"ground_truth": all_ground_truth, "predicted": all_predictions})
     df["correct"] = df["ground_truth"] == df["predicted"]
