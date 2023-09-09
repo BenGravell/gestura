@@ -81,48 +81,36 @@ with cols[0]:
     st.plotly_chart(fig, use_container_width=True)
 
 with cols[1]:
-    st.header("Time Series & Attention", divider="blue")
+    st.header("Time Series Features & Attention", divider="blue")
 
-    plot_container = st.container()
-    options_container = st.container()
+    predicted_attn = attn[0].detach().numpy()
+    predicted_attn = np.mean(predicted_attn, axis=1)
+    predicted_attn_df = pd.DataFrame(predicted_attn.T)
+    head_cols = [f"Attention Head {i}" for i in range(utils.heads)]
+    predicted_attn_df.columns = head_cols
+    predicted_attn_df.index = feature_df.index
 
-    with options_container:
-        # head_idx = st.number_input("Attention Head Index", min_value=0, max_value=utils.heads - 1)
-        head_idx = st.radio("Attention Head Index", options=[i for i in range(utils.heads)], horizontal=True)
-        predicted_attn = attn[0, head_idx].detach().numpy()
-        predicted_attn /= np.max(predicted_attn)
-    with plot_container:
-        line = px.line(feature_df, x="Timestep", y=["x", "y", "z"])
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        subplot_titles=("Features", "Attention"),
+        row_heights=[0.5, 0.5],
+        vertical_spacing=0.1,
+    )
+    feat_cols = [f"Acceleration {feat}" for feat in ["x", "y", "z"]]
+    line = px.line(
+        feature_df.rename(columns={feat: f"Acceleration {feat}" for feat in ["x", "y", "z"]}),
+        x="Timestep",
+        y=feat_cols,
+    )
+    fig.add_traces(list(line.select_traces()), rows=1, cols=1)
 
-        # Create a subplot with 2 rows and 1 column
-        fig = make_subplots(
-            rows=2,
-            cols=1,
-            shared_xaxes=True,
-            subplot_titles=("Time Series Data", f"Attention Heatmap (Head {head_idx})"),
-            row_heights=[0.3, 0.7],  # Giving more height to the heatmap
-            vertical_spacing=0.1,
-        )
-        # Add line plot for time series data
-        fig.add_traces(list(line.select_traces()), rows=1, cols=1)
+    attn_line = px.line(feature_df.join(predicted_attn_df), x="Timestep", y=head_cols)
+    fig.add_traces(list(attn_line.select_traces()), rows=2, cols=1)
 
-        # Add heatmap for attention weights
-        fig.add_trace(
-            go.Heatmap(
-                z=predicted_attn,
-                colorscale="Blues",
-                showscale=True,
-                colorbar=dict(y=0.3, len=0.6),  # Adjust position and length of the color scale
-                name="Attention Heatmap",
-                hovertemplate="Timestep (Query): %{x}<br>Timestep (Key): %{y}<br>Attention: %{z}",
-            ),
-            row=2,
-            col=1,
-        )
-
-        # fig.update_yaxes(scaleanchor="x", scaleratio=1, row=2, col=1)
-        fig.update_layout(height=600, margin=dict(l=50, r=50, b=0, t=0))
-        st.plotly_chart(fig, use_container_width=True)
+    fig.update_layout(height=600, margin=dict(l=50, r=50, b=50, t=50))
+    st.plotly_chart(fig, use_container_width=True)
 
 st.header("Predicted Class Probabilties", divider="blue")
 fig = px.bar(x=labels, y=predicted_proba)
