@@ -24,17 +24,19 @@ style_metric_cards(
 if not st.session_state.get("init"):
     app_utils.first_time()
 
-app_utils.show_load_most_recent_model_button_in_sidebar()
+app_utils.show_load_model_button_in_sidebar()
+
 
 # Prepare data
 gesture_df = app_utils.get_gesture_df()
-df = app_utils.get_predictions(st.session_state.model_path)
+df = app_utils.get_predictions(st.session_state.dataset_name, st.session_state.model_path)
 metrics = app_utils.compute_metrics(df["ground_truth"], df["predicted"])
 
 # Prepare data for display
 metrics_data = {
     "Class": np.unique(df["ground_truth"]),
     "Gesture": gesture_df["gesture"].values,
+    "Gesture Name": [app_utils.label_names_map[i] for i in range(utils.NUM_CLASSES)],
     "Precision": 100 * metrics["per_class"]["precision"],
     "Recall": 100 * metrics["per_class"]["recall"],
     "F1-Score": 100 * metrics["per_class"]["f1"],

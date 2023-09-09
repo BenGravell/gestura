@@ -24,7 +24,10 @@ st.write("The labels consist of the ID associated with the intended gesture made
 gesture_cols = st.columns(utils.NUM_CLASSES)
 for i in range(utils.NUM_CLASSES):
     with gesture_cols[i]:
-        st.image(app_utils.class_index_to_gesture_image_url(i, local=True), caption=f"Gesture {i}")
+        st.image(
+            app_utils.class_index_to_gesture_image_url(i, local=True),
+            caption=f'Gesture {i}, "{app_utils.label_names_map[i]}"',
+        )
 st.write(
     'Gesture vocabulary adopted from [C.S. Myers, L.R. Rabiner, *"A comparative study of several dynamic'
     ' time-warping algorithms for connected word recognition,"* The Bell System Technical Journal 60 (1981)'
