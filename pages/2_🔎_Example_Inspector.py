@@ -42,10 +42,21 @@ def main():
         idx for idx in range(len(st.session_state.dataset)) if st.session_state.dataset[idx][1] in labels_selected
     ]
 
+    def example_idx_to_label(idx):
+        return int(st.session_state.dataset[idx][1])
+
+    def example_label_to_gesture_name(label):
+        return app_utils.label_names_map[label]
+
+    def example_idx_to_selection_option(idx):
+        label = example_idx_to_label(idx)
+        gesture_name = example_label_to_gesture_name(label)
+        return f"Index: {idx:03d}, Label: {label}, Gesture Name: {gesture_name}"
+
     idx = st.selectbox(
         "Select Example",
         options=options,
-        format_func=lambda idx: f"{idx:03d} (label={st.session_state.dataset[idx][1]})",
+        format_func=example_idx_to_selection_option,
     )
 
     feature_df, label = app_utils.get_example_ground_truth_detail_data(idx, st.session_state.dataset_name)
@@ -56,11 +67,11 @@ def main():
     cols = st.columns([2, 3])
     with cols[0]:
         st.header("3D Acceleration Trajectory", divider="blue")
-        if not st.toggle("Hide Explanation of 3D Acceleration Trajectory", value=False):
+        if st.toggle("Show Explanation of 3D Acceleration Trajectory", value=True):
             st.info(
                 "This is **not** the literal 3D trajectory of *positions* in an inertial frame, but rather the 3D"
                 " trajectory of *accelerations* as recorded by the accelerometer. Therefore, do **not** expect an easy"
-                " matching with the ground truth gesture depiction.",
+                " matching with the ground truth gesture depiction based on visual comparison.",
                 icon="📢",
             )
 
