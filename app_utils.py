@@ -194,7 +194,8 @@ def get_example_prediction_detail_data(idx, dataset_name, model_path):
     feature, label = st.session_state.dataset[idx]
 
     x = feature[None, :]
-    output, attn = st.session_state.model.forward_with_attn(x)
+    with torch.no_grad():
+        output, attn = st.session_state.model.forward_with_attn(x)
 
     predicted_label = torch.argmax(output, dim=1).numpy().astype(int).item()
     predicted_proba = softmax(output, dim=1).detach().numpy()[0]
