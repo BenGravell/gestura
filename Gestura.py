@@ -27,7 +27,7 @@ def welcome():
         - Learn about open-source time-series classification datasets.
         """)
 
-        st.success("Explore the other pages in the sidebar for more details.", icon="↩️")
+        st.info("Explore the other pages in the sidebar for more details.", icon="↩️")
 
     with cols[1]:
         st.image("assets/welcome.jpg")
