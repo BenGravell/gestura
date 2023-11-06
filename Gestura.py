@@ -13,7 +13,7 @@ def streamlit_setup():
 def welcome():
     st.title("🤌 Gestura")
     st.caption("Visualize & introspect predictions of gestures from time-series data.")
-    
+
     cols = st.columns([2, 1])
 
     with cols[0]:
@@ -27,14 +27,14 @@ def welcome():
         - Learn about open-source time-series classification datasets.
         """)
 
-        st.info("Explore the other pages in the sidebar for more details.", icon="↩️")
-
     with cols[1]:
         st.image("assets/welcome.jpg")
 
+    st.info("Explore the other pages in the sidebar for more details.", icon="↩️")
+
 
 if __name__ == "__main__":
-    streamlit_setup()    
+    streamlit_setup()
 
     if not st.session_state.get("init"):
         app_utils.first_time()
