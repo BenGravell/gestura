@@ -3,7 +3,8 @@ import inspect
 import streamlit as st
 
 import app_utils
-import utils
+import modeling
+
 
 st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
 
@@ -11,7 +12,7 @@ if not st.session_state.get("init"):
     app_utils.first_time()
 
 
-st.header("Model Architecture Summary", divider="blue")
+st.header("Model Information", divider="blue")
 st.write(
     "The model used for prediction is a Long Short-Term Memory (LSTM) neural network with multi-head scaled"
     " dot-product self-attention."
@@ -53,8 +54,7 @@ with st.expander("Model Architecture Diagram"):
 
 with st.expander("Model Architecture Code"):
     st.write("The PyTorch model class code is given below.")
-    SelfAttention_code = inspect.getsource(utils.SelfAttention)
-    LSTMWithAttention_code = inspect.getsource(utils.LSTMWithAttention)
-    # model_architecture_code =
+    SelfAttention_code = inspect.getsource(modeling.SelfAttention)
+    LSTMWithAttention_code = inspect.getsource(modeling.LSTMWithAttention)
     st.code(SelfAttention_code)
     st.code(LSTMWithAttention_code)

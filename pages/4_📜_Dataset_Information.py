@@ -1,7 +1,7 @@
 import streamlit as st
 
 import app_utils
-import utils
+import constants
 
 
 st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
@@ -9,7 +9,7 @@ st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
 if not st.session_state.get("init"):
     app_utils.first_time()
 
-st.header("Data Description", divider="blue")
+st.header("Data Information", divider="blue")
 
 st.write("The data represent accelerometer recordings of human users making one of of eight simple gestures.")
 
@@ -21,12 +21,12 @@ st.write(
 
 st.subheader("Labels")
 st.write("The labels consist of the ID associated with the intended gesture made by the user.")
-gesture_cols = st.columns(utils.NUM_CLASSES)
-for i in range(utils.NUM_CLASSES):
+gesture_cols = st.columns(constants.NUM_CLASSES)
+for i in range(constants.NUM_CLASSES):
     with gesture_cols[i]:
         st.image(
             app_utils.class_index_to_gesture_image_url(i, local=True),
-            caption=f'Gesture {i}, "{app_utils.label_names_map[i]}"',
+            caption=f'Gesture {i}, "{constants.LABEL_TO_NAME_MAP[i]}"',
         )
 st.write(
     'Gesture vocabulary adopted from [C.S. Myers, L.R. Rabiner, *"A comparative study of several dynamic'
@@ -36,9 +36,9 @@ st.write(
 )
 
 st.header("Source", divider="blue")
-url = f"http://www.timeseriesclassification.com/description.php?Dataset={utils.DATASET_NAME}"
+url = f"http://www.timeseriesclassification.com/description.php?Dataset={constants.DATASET_NAME}"
 st.write(
-    f"The dataset used here is the [{utils.DATASET_NAME}]({url}) as provided by"
+    f"The dataset used here is the [{constants.DATASET_NAME}]({url}) as provided by"
     " [timeseriesclassification.com](https://www.timeseriesclassification.com/) and the [aeon"
     " toolkit](https://www.aeon-toolkit.org/)."
 )
@@ -51,4 +51,4 @@ st.write(
 )
 
 st.header("Download Link", divider="blue")
-st.write(f"http://www.timeseriesclassification.com/aeon-toolkit/{utils.DATASET_NAME}.zip")
+st.write(f"http://www.timeseriesclassification.com/aeon-toolkit/{constants.DATASET_NAME}.zip")

@@ -1,29 +1,40 @@
-"""Train a model with checkpoints."""
+"""Train a model with checkpoints at every epoch."""
 
 import argparse
+import logging
 
 import torch
 import torch.nn as nn
 
-import utils
+import dataloader
+import modeling
+from train_config import TRAIN_CONFIG
 
 
-def main(num_epochs=10, resume=False):
+def main(num_epochs: int, resume: bool, update_optimizer: bool, reset_optimizer: bool):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    _, dataloader_train, _, dataloader_test = utils.load_dataset()
+    dataloader_train, dataloader_test = dataloader.load_dataset()
 
     criterion = nn.CrossEntropyLoss()
 
     if resume:
-        model_path = utils.get_most_recent_model_path()
-        optimizer_path = utils.get_most_recent_optimizer_path()
-        checkpoint = utils.load_checkpoint(model_path, optimizer_path)
-        model = checkpoint["model"]
-        optimizer = checkpoint["optimizer"]
+        model_path = modeling.get_most_recent_model_path()
+        optimizer_path = modeling.get_most_recent_optimizer_path()
+        checkpoint = modeling.Checkpoint.from_files(model_path, optimizer_path)
     else:
-        model = utils.LSTMWithAttention()
-        optimizer = torch.optim.Adam(model.parameters(), lr=utils.learning_rate)
+        checkpoint = modeling.Checkpoint.from_default()
+
+    model = checkpoint.model
+    optimizer = checkpoint.optimizer
+
+    if reset_optimizer:
+        optimizer = modeling.create_default_optimizer(model)
+
+    if update_optimizer:
+        for param_group in optimizer.param_groups:
+            param_group["lr"] = TRAIN_CONFIG.learning_rate
+            param_group["weight_decay"] = TRAIN_CONFIG.weight_decay
 
     def evaluate_accuracy(model, dataloader):
         model.eval()
@@ -55,22 +66,35 @@ def main(num_epochs=10, resume=False):
             optimizer.step()
 
             # Show the batch training loss for every batch
-            print(f"Epoch: {epoch:3d} | Batch: {batch_idx:3d} | Loss: {loss.item():.3f}")
+            logging.info(f"Epoch: {epoch:3d} | Batch: {batch_idx:3d} | Loss: {loss.item():.3f}")
 
         # Show the train and test accuracy at the end of every epoch
         train_accuracy = evaluate_accuracy(model, dataloader_train)
         test_accuracy = evaluate_accuracy(model, dataloader_test)
-        print(f"Epoch: {epoch:3d} | -- Train Accuracy: {train_accuracy:.3f}")
-        print(f"Epoch: {epoch:3d} | --  Test Accuracy: {test_accuracy:.3f}")
-        utils.save_checkpoint(model, optimizer)
+        logging.info(f"Epoch: {epoch:3d} | -- Train Accuracy: {train_accuracy:.3f}")
+        logging.info(f"Epoch: {epoch:3d} | --  Test Accuracy: {test_accuracy:.3f}")
+
+        # Save a checkpoint
+        checkpoint.to_files()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Cleanup the model and optimizer directories to remove obsolete data.")
+    logging.getLogger().setLevel(logging.INFO)
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--resume",
         action="store_true",
         help="Resume training from the latest model.",
+    )
+    parser.add_argument(
+        "--update_optimizer",
+        action="store_true",
+        help="Configure the optimizer using the training config currently in the repo.",
+    )
+    parser.add_argument(
+        "--reset_optimizer",
+        action="store_true",
+        help="Reset the optimizer.",
     )
     parser.add_argument(
         "--num_epochs",
@@ -79,4 +103,4 @@ if __name__ == "__main__":
         help="Number of epochs.",
     )
     args = parser.parse_args()
-    main(args.num_epochs, args.resume)
+    main(args.num_epochs, args.resume, args.update_optimizer, args.reset_optimizer)

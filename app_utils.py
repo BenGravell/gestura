@@ -8,24 +8,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, preci
 import matplotlib.pyplot as plt
 import streamlit as st
 
-import utils
-
-
-# CONSTANTS
-
-labels = np.arange(utils.NUM_CLASSES)
-label_names_map = {
-    0: "Angle Down",
-    1: "Square CW",
-    2: "Straight Right",
-    3: "Straight Left",
-    4: "Straight Up",
-    5: "Straight Down",
-    6: "Circle CW",
-    7: "Circle CCW",
-}
-
-head_cols = [f"Head {i}" for i in range(utils.heads)]
+import constants
+import modeling
+import dataloader
 
 
 ################################################################################
@@ -55,7 +40,7 @@ def class_index_to_gesture_image_url(i, local=False):
 
 def get_gesture_df():
     return pd.DataFrame.from_dict(
-        {i: {"gesture": class_index_to_gesture_image_url(i)} for i in range(utils.NUM_CLASSES)}, orient="index"
+        {i: {"gesture": class_index_to_gesture_image_url(i)} for i in range(constants.NUM_CLASSES)}, orient="index"
     )
 
 
@@ -75,7 +60,7 @@ def show_load_model_button_in_sidebar():
         st.button(
             "Load Most Recent Model",
             on_click=load_model_callback,
-            kwargs={"model_path": utils.get_most_recent_model_path()},
+            kwargs={"model_path": modeling.get_most_recent_model_path()},
             type="primary",
             use_container_width=True,
         )
@@ -91,31 +76,31 @@ def show_load_model_button_in_sidebar():
 
 
 @st.cache_data(max_entries=10)
-def load_dataset(dataset_name=None):
-    return utils.load_dataset(dataset_name)
+def load_dataset(dataset_name):
+    return dataloader.load_dataset(dataset_name, return_dataloader=False)
 
 
 @st.cache_data(max_entries=10)
-def load_test_dataset_and_noshuffle_dataloader(dataset_name=None):
-    _, _, dataset, _ = load_dataset(dataset_name)
+def load_test_dataset_and_noshuffle_dataloader(dataset_name):
+    dataset = load_dataset(dataset_name)[1]
     dataloader = DataLoader(dataset, batch_size=64, shuffle=False)
     return dataset, dataloader
 
 
-def load_dataset_callback(dataset_name=None):
+def load_dataset_callback(dataset_name):
     if dataset_name == st.session_state.get("dataset_name"):
-        st.toast(f"Dataset :green[`{dataset_name}`] already loaded", icon="✅")
+        st.toast("Dataset already loaded", icon="✅")
     else:
         dataset, dataloader = load_test_dataset_and_noshuffle_dataloader(dataset_name)
         st.session_state.dataset_name = dataset_name
         st.session_state.dataset = dataset
         st.session_state.dataloader = dataloader
-        st.toast(f"Loaded dataset :green[`{dataset_name}`]", icon="🔄")
+        st.toast("Loaded dataset", icon="🔄")
 
 
 @st.cache_resource(max_entries=10)
 def load_model(model_path):
-    model = utils.load_checkpoint(model_path)["model"]
+    model = modeling.Checkpoint.from_files(model_path).model
     model.eval()
     return model
 
@@ -124,21 +109,21 @@ def load_model_callback(model_path):
     if model_path == st.session_state.get("model_path"):
         st.toast(f"Model already loaded from :green[`{st.session_state.model_path}`]", icon="✅")
     else:
-        st.session_state.model_path = utils.get_most_recent_model_path()
+        st.session_state.model_path = modeling.get_most_recent_model_path()
         st.session_state.model = load_model(st.session_state.model_path)
         st.toast(f"Loaded model from :green[`{st.session_state.model_path}`]", icon="🔄")
 
 
 @st.cache_resource(max_entries=1)
 def gen_diagram():
-    model = utils.LSTMWithAttention()
-    x = torch.zeros(1, utils.sequence_length, utils.input_size)
+    model = modeling.LSTMWithAttention()
+    x = torch.zeros(1, constants.SEQUENCE_LENGTH, constants.INPUT_SIZE)
     digraph = make_dot(model(x), params=dict(model.named_parameters()))
     return digraph
 
 
 @st.cache_data(max_entries=10)
-def get_predictions(dataset_name, model_path):
+def get_predictions(dataset_name, model_path, with_attention=False):
     # Explicit check to ensure that the dataset and model in st.session_state
     # corresponds to those associated with the dataset_name and model_paht in the func args.
     # This enables caching based on dataset_name and model_path rather than the dataset and model themselves,
@@ -148,10 +133,15 @@ def get_predictions(dataset_name, model_path):
 
     all_ground_truth = []
     all_predictions = []
+    if with_attention:
+        all_attentions = []
 
     with torch.no_grad():
         for features, labels in st.session_state.dataloader:
-            outputs = st.session_state.model(features)
+            if with_attention:
+                outputs, attentions = st.session_state.model.forward_with_attn(features)
+            else:
+                outputs = st.session_state.model(features)
 
             # Use argmax to get class predictions if your outputs are probabilities
             predicted_classes = torch.argmax(outputs, dim=1)
@@ -159,9 +149,16 @@ def get_predictions(dataset_name, model_path):
             all_predictions.extend(predicted_classes.detach().numpy())
             all_ground_truth.extend(labels.detach().numpy())
 
+            if with_attention:
+                all_attentions.extend(attentions.detach().numpy())
+
     df = pd.DataFrame({"ground_truth": all_ground_truth, "predicted": all_predictions})
     df["correct"] = df["ground_truth"] == df["predicted"]
-    return df
+
+    if with_attention:
+        return df, all_attentions
+    else:
+        return df
 
 
 @st.cache_data(max_entries=200)
@@ -182,10 +179,13 @@ def get_example_ground_truth_detail_data(idx, dataset_name):
     return feature_df, label
 
 
+# TODO - subsume this into get_predictions to get all of them in batch, then just index into the df or list
+
+
 @st.cache_data(max_entries=200)
 def get_example_prediction_detail_data(idx, dataset_name, model_path):
     # Explicit check to ensure that the dataset and model in st.session_state
-    # corresponds to those associated with the dataset_name and model_paht in the func args.
+    # corresponds to those associated with the dataset_name and model_path in the func args.
     # This enables caching based on dataset_name and model_path rather than the dataset and model themselves,
     # ensuring that the dataset and model in the st.session_state are safe to use.
     assert dataset_name == st.session_state.dataset_name
@@ -203,7 +203,7 @@ def get_example_prediction_detail_data(idx, dataset_name, model_path):
     predicted_attn = attn[0].detach().numpy()
     predicted_attn = np.mean(predicted_attn, axis=1)
     predicted_attn_df = pd.DataFrame(predicted_attn.T)
-    predicted_attn_df.columns = head_cols
+    predicted_attn_df.columns = constants.HEAD_NAMES
 
     return predicted_label, predicted_proba, predicted_attn_df
 
@@ -226,6 +226,6 @@ def compute_metrics(y_true, y_pred):
 
 
 def first_time():
-    load_dataset_callback(dataset_name=utils.DATASET_NAME)
-    load_model_callback(model_path=utils.get_most_recent_model_path())
+    load_dataset_callback(dataset_name=constants.DATASET_NAME)
+    load_model_callback(model_path=modeling.get_most_recent_model_path())
     st.session_state.init = True

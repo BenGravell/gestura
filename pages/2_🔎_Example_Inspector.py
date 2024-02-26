@@ -3,9 +3,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import config
+import constants
+from train_config import TRAIN_CONFIG
+import streamlit_config
 import app_utils
-import utils
 
 
 def setup():
@@ -29,9 +30,9 @@ def main():
 
     labels_selected = st.multiselect(
         "Ground Truth Labels to Select From",
-        options=app_utils.labels,
-        default=app_utils.labels,
-        format_func=lambda x: f"{app_utils.label_names_map[x]} ({x})",
+        options=constants.LABELS,
+        default=constants.LABELS,
+        format_func=lambda x: f"{constants.LABEL_TO_NAME_MAP[x]} ({x})",
     )
 
     if len(labels_selected) == 0:
@@ -46,7 +47,7 @@ def main():
         return int(st.session_state.dataset[idx][1])
 
     def example_label_to_gesture_name(label):
-        return app_utils.label_names_map[label]
+        return constants.LABEL_TO_NAME_MAP[label]
 
     def example_idx_to_selection_option(idx):
         label = example_idx_to_label(idx)
@@ -83,7 +84,7 @@ def main():
             hoverinfo="text+x+y+z",
             marker=dict(
                 size=4,
-                color=config.STREAMLIT_CONFIG["theme"]["primaryColor"],
+                color=streamlit_config.STREAMLIT_CONFIG["theme"]["primaryColor"],
                 opacity=0.7,
             ),
             line=dict(color="black", width=3),
@@ -123,9 +124,9 @@ def main():
             fig.add_trace(trace, row=1, col=1)
 
         # Line plot for attention
-        colors = app_utils.get_colors_from_colormap("Blues", n=utils.heads, start=0.4, end=1.0)
-        color_sequence_map = {head_col: colors[i] for i, head_col in enumerate(app_utils.head_cols)}
-        for head_col in app_utils.head_cols:
+        colors = app_utils.get_colors_from_colormap("Blues", n=TRAIN_CONFIG.num_heads, start=0.4, end=1.0)
+        color_sequence_map = {head_col: colors[i] for i, head_col in enumerate(constants.HEAD_NAMES)}
+        for head_col in constants.HEAD_NAMES:
             trace = go.Scatter(
                 x=feature_df["Timestep"],
                 y=predicted_attn_df[head_col],
@@ -141,7 +142,7 @@ def main():
         st.plotly_chart(fig, use_container_width=True)
 
     st.header("Predicted Class Probabilties", divider="blue")
-    fig = px.bar(x=app_utils.labels, y=predicted_proba)
+    fig = px.bar(x=constants.LABELS, y=predicted_proba)
 
     fig.add_annotation(
         text="Ground Truth",
@@ -159,7 +160,7 @@ def main():
         y=-0.1,
         arrowhead=2,
         showarrow=False,
-        font=dict(size=14, color=config.STREAMLIT_CONFIG["theme"]["primaryColor"]),
+        font=dict(size=14, color=streamlit_config.STREAMLIT_CONFIG["theme"]["primaryColor"]),
         textangle=0,
         xanchor="center",
     )
@@ -167,13 +168,15 @@ def main():
     fig.update_layout(
         xaxis_title="Class",
         yaxis_title="Value",
-        xaxis=dict(tickvals=list(range(0, utils.NUM_CLASSES)), ticktext=[str(i) for i in range(0, utils.NUM_CLASSES)]),
+        xaxis=dict(
+            tickvals=list(range(constants.NUM_CLASSES)), ticktext=[str(i) for i in range(constants.NUM_CLASSES)]
+        ),
     )
 
     # Adjust the y-axis range to leave space for the images
     fig.update_yaxes(range=[-0.8, 1.0])
 
-    for i in range(utils.NUM_CLASSES):
+    for i in range(constants.NUM_CLASSES):
         fig.add_layout_image(
             x=i,
             y=-0.5,

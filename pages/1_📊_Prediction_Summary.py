@@ -5,17 +5,17 @@ import plotly.figure_factory as ff
 import streamlit as st
 from streamlit_extras.metric_cards import style_metric_cards
 
-import config
-import utils
+import constants
+import streamlit_config
 import app_utils
 
 
 st.set_page_config(page_title="Gestura", page_icon="🤌", layout="wide")
 
 style_metric_cards(
-    border_left_color=config.STREAMLIT_CONFIG["theme"]["primaryColor"],
-    border_color=config.STREAMLIT_CONFIG["theme"]["secondaryBackgroundColor"],
-    background_color=config.STREAMLIT_CONFIG["theme"]["backgroundColor"],
+    border_left_color=streamlit_config.STREAMLIT_CONFIG["theme"]["primaryColor"],
+    border_color=streamlit_config.STREAMLIT_CONFIG["theme"]["secondaryBackgroundColor"],
+    background_color=streamlit_config.STREAMLIT_CONFIG["theme"]["backgroundColor"],
     border_size_px=2,
     border_radius_px=20,
     box_shadow=False,
@@ -36,7 +36,7 @@ metrics = app_utils.compute_metrics(df["ground_truth"], df["predicted"])
 metrics_data = {
     "Class": np.unique(df["ground_truth"]),
     "Gesture": gesture_df["gesture"].values,
-    "Gesture Name": [app_utils.label_names_map[i] for i in range(utils.NUM_CLASSES)],
+    "Gesture Name": [constants.LABEL_TO_NAME_MAP[i] for i in range(constants.NUM_CLASSES)],
     "Precision": 100 * metrics["per_class"]["precision"],
     "Recall": 100 * metrics["per_class"]["recall"],
     "F1-Score": 100 * metrics["per_class"]["f1"],
@@ -113,8 +113,8 @@ st.dataframe(
 )
 
 st.header("Confusion Matrix", divider="blue")
-x = [f"Predicted Class {i}" for i in range(utils.output_size)]
-y = [f"Actual Class {i}" for i in range(utils.output_size)]
+x = [f"Predicted Class {i}" for i in range(constants.OUTPUT_SIZE)]
+y = [f"Actual Class {i}" for i in range(constants.OUTPUT_SIZE)]
 
 confusion_matrix_normalization_options = [
     "No Normalization",
@@ -140,7 +140,7 @@ confusion_matrix_normalization_option_sklearn = streamlit_to_sklearn_normalize_o
 C = confusion_matrix(
     df["ground_truth"],
     df["predicted"],
-    labels=np.arange(utils.NUM_CLASSES),
+    labels=np.arange(constants.NUM_CLASSES),
     normalize=confusion_matrix_normalization_option_sklearn,
 )
 
