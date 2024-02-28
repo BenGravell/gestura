@@ -89,13 +89,13 @@ def load_test_dataset_and_noshuffle_dataloader(dataset_name):
 
 def load_dataset_callback(dataset_name):
     if dataset_name == st.session_state.get("dataset_name"):
-        st.toast("Dataset already loaded", icon="✅")
+        st.toast(f"Dataset `{dataset_name}` already loaded", icon="✅")
     else:
         dataset, dataloader = load_test_dataset_and_noshuffle_dataloader(dataset_name)
         st.session_state.dataset_name = dataset_name
         st.session_state.dataset = dataset
         st.session_state.dataloader = dataloader
-        st.toast("Loaded dataset", icon="🔄")
+        st.toast(f"Loaded dataset `{dataset_name}`", icon="🔄")
 
 
 @st.cache_resource(max_entries=10)
@@ -125,7 +125,7 @@ def gen_diagram():
 @st.cache_data(max_entries=10)
 def get_predictions(dataset_name, model_path, with_attention=False):
     # Explicit check to ensure that the dataset and model in st.session_state
-    # corresponds to those associated with the dataset_name and model_paht in the func args.
+    # corresponds to those associated with the dataset_name and model_path in the func args.
     # This enables caching based on dataset_name and model_path rather than the dataset and model themselves,
     # ensuring that the dataset and model in the st.session_state are safe to use.
     assert dataset_name == st.session_state.dataset_name

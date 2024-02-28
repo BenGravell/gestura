@@ -33,7 +33,7 @@ def load_data(dataset_name=None):
 def load_dataset(
     dataset_name=None, swap_seq_dim_axes: bool = True, tensorize: bool = True, return_dataloader: bool = True
 ):
-    X, y, _ = load_data(dataset_name)
+    X, y = load_data(dataset_name)
 
     if swap_seq_dim_axes:
         # swap axes so data is organized with dims (num_examples, sequence_length, input_size)
@@ -58,5 +58,5 @@ def load_dataset(
 
     datasets = (SklearnDataset(X_train, y_train), SklearnDataset(X_test, y_test))
     if return_dataloader:
-        return (DataLoader(dataset, batch_size=TRAIN_CONFIG.batch_size, shuffle=True) for dataset in datasets)
+        return tuple(DataLoader(dataset, batch_size=TRAIN_CONFIG.batch_size, shuffle=True) for dataset in datasets)
     return datasets
