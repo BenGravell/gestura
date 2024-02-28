@@ -1,6 +1,5 @@
-# Model & optimizer files
-model/
-optimizer/
+# Artifact files
+artifacts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
