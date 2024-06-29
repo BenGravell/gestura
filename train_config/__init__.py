@@ -7,6 +7,7 @@ import json_utils
 class TrainConfig:
     learning_rate: float
     weight_decay: float
+    dropout: float
     hidden_size: int
     num_layers: int
     num_heads: int

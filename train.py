@@ -66,13 +66,13 @@ def main(num_epochs: int, resume: bool, update_optimizer: bool, reset_optimizer:
             optimizer.step()
 
             # Show the batch training loss for every batch
-            logging.info(f"Epoch: {epoch:3d} | Batch: {batch_idx:3d} | Loss: {loss.item():.3f}")
+            logging.info(f"Epoch: {epoch+1:3d} | Batch: {batch_idx+1:3d} | Loss: {loss.item():.3f}")
 
         # Show the train and test accuracy at the end of every epoch
         train_accuracy = evaluate_accuracy(model, dataloader_train)
         test_accuracy = evaluate_accuracy(model, dataloader_test)
-        logging.info(f"Epoch: {epoch:3d} | -- Train Accuracy: {train_accuracy:.3f}")
-        logging.info(f"Epoch: {epoch:3d} | --  Test Accuracy: {test_accuracy:.3f}")
+        logging.info(f"Epoch: {epoch+1:3d} | -- Train Accuracy: {train_accuracy:.3f}")
+        logging.info(f"Epoch: {epoch+1:3d} | --  Test Accuracy: {test_accuracy:.3f}")
 
         # Save a checkpoint
         checkpoint.to_files()

@@ -68,7 +68,7 @@ class LSTMWithAttention(nn.Module):
 
     def __init__(self):
         super(LSTMWithAttention, self).__init__()
-        self.lstm = nn.LSTM(constants.INPUT_SIZE, TRAIN_CONFIG.hidden_size, TRAIN_CONFIG.num_layers, batch_first=True)
+        self.lstm = nn.LSTM(constants.INPUT_SIZE, TRAIN_CONFIG.hidden_size, TRAIN_CONFIG.num_layers, batch_first=True, dropout=TRAIN_CONFIG.dropout)
         self.attention = SelfAttention(embed_size=TRAIN_CONFIG.hidden_size, num_heads=TRAIN_CONFIG.num_heads)
         self.fc = nn.Linear(TRAIN_CONFIG.hidden_size, constants.OUTPUT_SIZE)
 
