@@ -20,7 +20,7 @@ import dataloader
 
 def get_colors_from_colormap(colormap_name, n, start=0, end=1):
     """Return n evenly spaced colors from a given colormap within a specified range."""
-    colormap = plt.cm.get_cmap(colormap_name)
+    colormap = getattr(plt.cm, colormap_name)
 
     # Generate n evenly spaced numbers between start and end
     values = np.linspace(start, end, n)
